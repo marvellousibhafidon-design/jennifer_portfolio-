@@ -1,0 +1,116 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { db } from '@/lib/firebase/client';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+
+export default function AdminProcessPage() {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState(null);
+  const [form, setForm] = useState({ title: '', description: '', iconName: '', isPublished: true, order: 0 });
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => { loadItems(); }, []);
+
+  const loadItems = async () => {
+    try {
+      const snap = await getDocs(collection(db, 'processStages'));
+      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      list.sort((a,b) => a.order - b.order);
+      setItems(list);
+    } catch { setError('Failed to load.'); } finally { setLoading(false); }
+  };
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  const resetForm = () => {
+    setForm({ title: '', description: '', iconName: '', isPublished: true, order: items.length });
+    setEditingId(null);
+    setError(null);
+    setSuccess(false);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    setSuccess(false);
+    try {
+      if (editingId) await updateDoc(doc(db, 'processStages', editingId), form);
+      else await addDoc(collection(db, 'processStages'), { ...form, order: items.length });
+      setSuccess(true);
+      await loadItems();
+      resetForm();
+    } catch (err) {
+      setError('Save failed: ' + err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEdit = (item) => { setEditingId(item.id); setForm(item); };
+  const handleDelete = async (id) => { if (!confirm('Delete?')) return; await deleteDoc(doc(db, 'processStages', id)); await loadItems(); };
+
+  const styles = {
+    container: { padding: '20px', maxWidth: '800px', margin: '0 auto' },
+    title: { color: '#C9A832', fontSize: '1.8rem', marginBottom: '20px' },
+    form: { background: '#0D2E17', padding: '20px', borderRadius: '12px', border: '1px solid #2D7D3A', marginBottom: '30px' },
+    label: { color: '#C9A832', fontWeight: '600', display: 'block', marginBottom: '4px' },
+    input: { width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #2D7D3A', background: '#1A4D24', color: '#E8E8E8', fontSize: '1rem', marginBottom: '12px' },
+    textarea: { width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #2D7D3A', background: '#1A4D24', color: '#E8E8E8', fontSize: '1rem', minHeight: '60px', marginBottom: '12px' },
+    checkbox: { marginRight: '8px' },
+    button: { padding: '10px 20px', background: '#C9A832', color: '#0D2E17', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' },
+    buttonDanger: { padding: '6px 12px', background: '#4D1A1A', color: '#E8A0A0', border: '1px solid #C9A832', borderRadius: '6px', cursor: 'pointer' },
+    buttonSmall: { padding: '6px 12px', background: '#2D7D3A', color: '#E8E8E8', border: 'none', borderRadius: '6px', cursor: 'pointer', marginRight: '8px' },
+    table: { width: '100%', borderCollapse: 'collapse' },
+    th: { textAlign: 'left', color: '#C9A832', padding: '10px', borderBottom: '1px solid #2D7D3A' },
+    td: { padding: '10px', borderBottom: '1px solid #1A4D24', color: '#E8E8E8' },
+    success: { background: '#2D7D3A', padding: '10px', borderRadius: '8px', color: '#C9A832', border: '1px solid #C9A832', marginBottom: '12px' },
+    error: { background: '#4D1A1A', padding: '10px', borderRadius: '8px', color: '#E8A0A0', border: '1px solid #C9A832', marginBottom: '12px' },
+  };
+
+  if (loading) return <p style={{ color: '#B8D9B8' }}>Loading...</p>;
+
+  return (
+    <div style={styles.container}>
+      <h1 style={styles.title}>🔄 Process Stages</h1>
+      {error && <div style={styles.error}>{error}</div>}
+      {success && <div style={styles.success}>✅ Saved!</div>}
+      <div style={styles.form}>
+        <h3 style={{ color: '#C9A832', marginBottom: '12px' }}>{editingId ? 'Edit' : 'Add'} Stage</h3>
+        <form onSubmit={handleSubmit}>
+          <label style={styles.label}>Title *</label>
+          <input type="text" name="title" value={form.title} onChange={handleChange} style={styles.input} required />
+          <label style={styles.label}>Description</label>
+          <textarea name="description" value={form.description} onChange={handleChange} style={styles.textarea} />
+          <label style={styles.label}>Icon Name (optional)</label>
+          <input type="text" name="iconName" value={form.iconName} onChange={handleChange} style={styles.input} />
+          <label style={styles.label}><input type="checkbox" name="isPublished" checked={form.isPublished} onChange={handleChange} style={styles.checkbox} /> Published</label>
+          <button type="submit" disabled={submitting} style={styles.button}>{submitting ? 'Saving...' : 'Save'}</button>
+          <button type="button" onClick={resetForm} style={{ ...styles.button, background: '#6B8C6B', marginLeft: '12px' }}>Cancel</button>
+        </form>
+      </div>
+      <table style={styles.table}>
+        <thead><tr><th style={styles.th}>Title</th><th style={styles.th}>Status</th><th style={styles.th}>Actions</th></tr></thead>
+        <tbody>
+          {items.map(item => (
+            <tr key={item.id}>
+              <td style={styles.td}>{item.title}</td>
+              <td style={styles.td}>{item.isPublished ? '✅ Published' : '📄 Draft'}</td>
+              <td style={styles.td}>
+                <button onClick={() => handleEdit(item)} style={styles.buttonSmall}>✏️ Edit</button>
+                <button onClick={() => handleDelete(item.id)} style={styles.buttonDanger}>🗑️ Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}

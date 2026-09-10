@@ -1,0 +1,30 @@
+# dependencies
+node_modules/
+.next/
+out/
+
+# environment
+.env
+.env.local
+.env.*.local
+
+# build
+dist/
+build/
+
+# logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Firebase
+firebase-debug.log
+.firebase/
+
+# Netlify
+.netlify/
+grant_admin.py 
+.env.local 

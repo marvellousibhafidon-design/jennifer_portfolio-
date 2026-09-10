@@ -1,0 +1,28 @@
+{
+  "name": "jennifer-ibhafidon-portfolio",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "grant-admin": "node scripts/grant-admin.js"
+  },
+  "dependencies": {
+    "@netlify/blobs": "latest",
+    "firebase": "latest",
+    "firebase-admin": "latest",
+    "isomorphic-dompurify": "^4.1.0",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "dotenv": "latest",
+    "typescript": "latest"
+  }
+}
