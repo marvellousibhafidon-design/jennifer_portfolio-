@@ -17,6 +17,10 @@
     "next": "latest",
     "react": "latest",
     "react-dom": "latest"
+    "devDependencies": {
+  "@netlify/plugin-nextjs": "^5.0.0",
+  "dotenv": "latest"
+}
   },
   "devDependencies": {
     "@types/node": "latest",
