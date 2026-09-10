@@ -10,23 +10,16 @@
     "grant-admin": "node scripts/grant-admin.js"
   },
   "dependencies": {
-    "@netlify/blobs": "latest",
-    "firebase": "latest",
-    "firebase-admin": "latest",
-    "isomorphic-dompurify": "^4.1.0",
     "next": "latest",
     "react": "latest",
-    "react-dom": "latest"
-    "devDependencies": {
-  "@netlify/plugin-nextjs": "^5.0.0",
-  "dotenv": "latest"
-}
+    "react-dom": "latest",
+    "firebase": "latest",
+    "firebase-admin": "latest",
+    "@netlify/blobs": "latest",
+    "isomorphic-dompurify": "latest"
   },
   "devDependencies": {
-    "@types/node": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "dotenv": "latest",
-    "typescript": "latest"
+    "@netlify/plugin-nextjs": "^5.0.0",
+    "dotenv": "latest"
   }
 }
